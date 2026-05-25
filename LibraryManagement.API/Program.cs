@@ -16,9 +16,16 @@ builder.Services.AddDbContext<LibraryDbContext>(options =>
 // ── Repositories ──
 builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
 builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
+builder.Services.AddScoped<IAuthorRepository, AuthorRepository>();
+builder.Services.AddScoped<IBookRepository, BookRepository>();
+
+
 
 // ── Services ──
 builder.Services.AddScoped<ICategoryService, CategoryService>();
+builder.Services.AddScoped<IAuthorService, AuthorService>();
+builder.Services.AddScoped<IBookService, BookService>();
+
 
 // ── AutoMapper ──
 builder.Services.AddAutoMapper(typeof(MappingProfile));

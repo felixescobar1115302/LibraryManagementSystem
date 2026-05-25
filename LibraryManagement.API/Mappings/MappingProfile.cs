@@ -11,5 +11,15 @@ public class MappingProfile : Profile
     {
         CreateMap<CategoryRequestDTO, Category>();
         CreateMap<Category, CategoryResponseDTO>();
+
+        CreateMap<AuthorRequestDTO, Author>();
+        CreateMap<Author, AuthorResponseDTO>();
+
+        CreateMap<BookRequestDTO, Book>();
+        CreateMap<Book, BookResponseDTO>()
+            .ForMember(dest => dest.CategoryName,
+                opt => opt.MapFrom(src => src.Category.Name))
+            .ForMember(dest => dest.AuthorName,
+                opt => opt.MapFrom(src => src.Author.FirstName + " " + src.Author.LastName));
     }
 }
