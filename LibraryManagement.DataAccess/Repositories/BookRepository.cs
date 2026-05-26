@@ -15,7 +15,8 @@ public class BookRepository : GenericRepository<Book>, IBookRepository
     {
         return await _dbSet
             .Include(b => b.Category)
-            .Include(b => b.Author)
+            .Include(b => b.BookAuthors)
+                .ThenInclude(ba => ba.Author)
             .ToListAsync();
     }
 
@@ -23,7 +24,8 @@ public class BookRepository : GenericRepository<Book>, IBookRepository
     {
         return await _dbSet
             .Include(b => b.Category)
-            .Include(b => b.Author)
+            .Include(b => b.BookAuthors)
+                .ThenInclude(ba => ba.Author)
             .FirstOrDefaultAsync(b => b.Id == id);
     }
 
@@ -31,7 +33,8 @@ public class BookRepository : GenericRepository<Book>, IBookRepository
     {
         return await _dbSet
             .Include(b => b.Category)
-            .Include(b => b.Author)
+            .Include(b => b.BookAuthors)
+                .ThenInclude(ba => ba.Author)
             .FirstOrDefaultAsync(b => b.ISBN.ToLower() == isbn.ToLower());
     }
 
@@ -40,16 +43,18 @@ public class BookRepository : GenericRepository<Book>, IBookRepository
         return await _dbSet
             .Where(b => b.CategoryId == categoryId)
             .Include(b => b.Category)
-            .Include(b => b.Author)
+            .Include(b => b.BookAuthors)
+                .ThenInclude(ba => ba.Author)
             .ToListAsync();
     }
 
     public async Task<IEnumerable<Book>> GetByAuthorAsync(int authorId)
     {
         return await _dbSet
-            .Where(b => b.AuthorId == authorId)
+            .Where(b => b.BookAuthors.Any(ba => ba.AuthorId == authorId))
             .Include(b => b.Category)
-            .Include(b => b.Author)
+            .Include(b => b.BookAuthors)
+                .ThenInclude(ba => ba.Author)
             .ToListAsync();
     }
 }

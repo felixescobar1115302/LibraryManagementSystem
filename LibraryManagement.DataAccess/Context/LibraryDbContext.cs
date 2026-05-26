@@ -15,6 +15,7 @@ public class LibraryDbContext : DbContext
     public DbSet<Book> Books => Set<Book>();
     public DbSet<Member> Members => Set<Member>();
     public DbSet<Loan> Loans => Set<Loan>();
+    public DbSet<BookAuthor> BookAuthors => Set<BookAuthor>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -27,7 +28,6 @@ public class LibraryDbContext : DbContext
             entity.Property(c => c.Description).HasMaxLength(250);
             entity.Property(c => c.CreatedAt).IsRequired();
             entity.Property(c => c.UpdatedAt).IsRequired(false);
-
             entity.HasIndex(c => c.Name).IsUnique();
         });
 
@@ -57,11 +57,6 @@ public class LibraryDbContext : DbContext
                   .HasForeignKey(b => b.CategoryId)
                   .OnDelete(DeleteBehavior.Restrict);
 
-            entity.HasOne(b => b.Author)
-                  .WithMany(a => a.Books)
-                  .HasForeignKey(b => b.AuthorId)
-                  .OnDelete(DeleteBehavior.Restrict);
-
             entity.HasIndex(b => b.ISBN).IsUnique();
         });
 
@@ -75,7 +70,6 @@ public class LibraryDbContext : DbContext
             entity.Property(m => m.MembershipDate).IsRequired();
             entity.Property(m => m.CreatedAt).IsRequired();
             entity.Property(m => m.UpdatedAt).IsRequired(false);
-
             entity.HasIndex(m => m.Email).IsUnique();
         });
 
@@ -98,6 +92,25 @@ public class LibraryDbContext : DbContext
                   .WithMany(b => b.Loans)
                   .HasForeignKey(l => l.BookId)
                   .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<BookAuthor>(entity =>
+        {
+            entity.HasKey(ba => ba.Id);
+            entity.Property(ba => ba.CreatedAt).IsRequired();
+            entity.Property(ba => ba.UpdatedAt).IsRequired(false);
+
+            entity.HasOne(ba => ba.Book)
+                  .WithMany(b => b.BookAuthors)
+                  .HasForeignKey(ba => ba.BookId)
+                  .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(ba => ba.Author)
+                  .WithMany(a => a.BookAuthors)
+                  .HasForeignKey(ba => ba.AuthorId)
+                  .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasIndex(ba => new { ba.BookId, ba.AuthorId }).IsUnique();
         });
     }
 }

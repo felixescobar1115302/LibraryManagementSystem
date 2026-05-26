@@ -8,5 +8,6 @@ public interface ILoanRepository : IGenericRepository<Loan>
     Task<Loan?> GetByIdWithDetailsAsync(int id);
     Task<IEnumerable<Loan>> GetByMemberAsync(int memberId);
     Task<IEnumerable<Loan>> GetByBookAsync(int bookId);
+    Task<IEnumerable<Loan>> GetActiveLoansAsync();
     Task<Loan?> GetActiveLoanByBookIdAsync(int bookId);
 }

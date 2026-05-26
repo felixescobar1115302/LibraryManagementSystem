@@ -1,7 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using LibraryManagement.DataAccess.Context;
 using LibraryManagement.Domain.Entities;
-using LibraryManagement.Domain.Enums;
 using LibraryManagement.Domain.Interfaces.Repositories;
 
 namespace LibraryManagement.DataAccess.Repositories;
@@ -12,22 +11,38 @@ public class LoanRepository : GenericRepository<Loan>, ILoanRepository
     {
     }
 
-    public async Task<IEnumerable<Loan>> GetAllWithDetailsAsync()
+    public override async Task<IEnumerable<Loan>> GetAllAsync()
     {
         return await _dbSet
             .Include(l => l.Member)
             .Include(l => l.Book)
-            .ThenInclude(b => b.Author)
+                .ThenInclude(b => b.Category)
+            .Include(l => l.Book)
+                .ThenInclude(b => b.BookAuthors)
+                    .ThenInclude(ba => ba.Author)
             .ToListAsync();
+    }
+
+    public async Task<IEnumerable<Loan>> GetAllWithDetailsAsync()
+    {
+        return await GetAllAsync();
+    }
+
+    public override async Task<Loan?> GetByIdAsync(int id)
+    {
+        return await _dbSet
+            .Include(l => l.Member)
+            .Include(l => l.Book)
+                .ThenInclude(b => b.Category)
+            .Include(l => l.Book)
+                .ThenInclude(b => b.BookAuthors)
+                    .ThenInclude(ba => ba.Author)
+            .FirstOrDefaultAsync(l => l.Id == id);
     }
 
     public async Task<Loan?> GetByIdWithDetailsAsync(int id)
     {
-        return await _dbSet
-            .Include(l => l.Member)
-            .Include(l => l.Book)
-            .ThenInclude(b => b.Author)
-            .FirstOrDefaultAsync(l => l.Id == id);
+        return await GetByIdAsync(id);
     }
 
     public async Task<IEnumerable<Loan>> GetByMemberAsync(int memberId)
@@ -36,7 +51,10 @@ public class LoanRepository : GenericRepository<Loan>, ILoanRepository
             .Where(l => l.MemberId == memberId)
             .Include(l => l.Member)
             .Include(l => l.Book)
-            .ThenInclude(b => b.Author)
+                .ThenInclude(b => b.Category)
+            .Include(l => l.Book)
+                .ThenInclude(b => b.BookAuthors)
+                    .ThenInclude(ba => ba.Author)
             .ToListAsync();
     }
 
@@ -46,7 +64,23 @@ public class LoanRepository : GenericRepository<Loan>, ILoanRepository
             .Where(l => l.BookId == bookId)
             .Include(l => l.Member)
             .Include(l => l.Book)
-            .ThenInclude(b => b.Author)
+                .ThenInclude(b => b.Category)
+            .Include(l => l.Book)
+                .ThenInclude(b => b.BookAuthors)
+                    .ThenInclude(ba => ba.Author)
+            .ToListAsync();
+    }
+
+    public async Task<IEnumerable<Loan>> GetActiveLoansAsync()
+    {
+        return await _dbSet
+            .Where(l => l.ReturnDate == null)
+            .Include(l => l.Member)
+            .Include(l => l.Book)
+                .ThenInclude(b => b.Category)
+            .Include(l => l.Book)
+                .ThenInclude(b => b.BookAuthors)
+                    .ThenInclude(ba => ba.Author)
             .ToListAsync();
     }
 
@@ -55,6 +89,10 @@ public class LoanRepository : GenericRepository<Loan>, ILoanRepository
         return await _dbSet
             .Include(l => l.Member)
             .Include(l => l.Book)
-            .FirstOrDefaultAsync(l => l.BookId == bookId && l.Status == LoanStatus.Active);
+                .ThenInclude(b => b.Category)
+            .Include(l => l.Book)
+                .ThenInclude(b => b.BookAuthors)
+                    .ThenInclude(ba => ba.Author)
+            .FirstOrDefaultAsync(l => l.BookId == bookId && l.ReturnDate == null);
     }
 }
