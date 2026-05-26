@@ -13,6 +13,8 @@ public class LibraryDbContext : DbContext
     public DbSet<Category> Categories => Set<Category>();
     public DbSet<Author> Authors => Set<Author>();
     public DbSet<Book> Books => Set<Book>();
+    public DbSet<Member> Members => Set<Member>();
+    public DbSet<Loan> Loans => Set<Loan>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -25,6 +27,7 @@ public class LibraryDbContext : DbContext
             entity.Property(c => c.Description).HasMaxLength(250);
             entity.Property(c => c.CreatedAt).IsRequired();
             entity.Property(c => c.UpdatedAt).IsRequired(false);
+
             entity.HasIndex(c => c.Name).IsUnique();
         });
 
@@ -44,11 +47,10 @@ public class LibraryDbContext : DbContext
             entity.Property(b => b.Title).IsRequired().HasMaxLength(150);
             entity.Property(b => b.ISBN).IsRequired().HasMaxLength(20);
             entity.Property(b => b.PublicationYear).IsRequired();
+            entity.Property(b => b.Stock).IsRequired();
             entity.Property(b => b.Format).IsRequired();
             entity.Property(b => b.CreatedAt).IsRequired();
             entity.Property(b => b.UpdatedAt).IsRequired(false);
-
-            entity.HasIndex(b => b.ISBN).IsUnique();
 
             entity.HasOne(b => b.Category)
                   .WithMany(c => c.Books)
@@ -58,6 +60,43 @@ public class LibraryDbContext : DbContext
             entity.HasOne(b => b.Author)
                   .WithMany(a => a.Books)
                   .HasForeignKey(b => b.AuthorId)
+                  .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasIndex(b => b.ISBN).IsUnique();
+        });
+
+        modelBuilder.Entity<Member>(entity =>
+        {
+            entity.HasKey(m => m.Id);
+            entity.Property(m => m.FirstName).IsRequired().HasMaxLength(80);
+            entity.Property(m => m.LastName).IsRequired().HasMaxLength(80);
+            entity.Property(m => m.Email).IsRequired().HasMaxLength(150);
+            entity.Property(m => m.Phone).HasMaxLength(30);
+            entity.Property(m => m.MembershipDate).IsRequired();
+            entity.Property(m => m.CreatedAt).IsRequired();
+            entity.Property(m => m.UpdatedAt).IsRequired(false);
+
+            entity.HasIndex(m => m.Email).IsUnique();
+        });
+
+        modelBuilder.Entity<Loan>(entity =>
+        {
+            entity.HasKey(l => l.Id);
+            entity.Property(l => l.LoanDate).IsRequired();
+            entity.Property(l => l.DueDate).IsRequired();
+            entity.Property(l => l.ReturnDate).IsRequired(false);
+            entity.Property(l => l.Status).IsRequired();
+            entity.Property(l => l.CreatedAt).IsRequired();
+            entity.Property(l => l.UpdatedAt).IsRequired(false);
+
+            entity.HasOne(l => l.Member)
+                  .WithMany(m => m.Loans)
+                  .HasForeignKey(l => l.MemberId)
+                  .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(l => l.Book)
+                  .WithMany(b => b.Loans)
+                  .HasForeignKey(l => l.BookId)
                   .OnDelete(DeleteBehavior.Restrict);
         });
     }
