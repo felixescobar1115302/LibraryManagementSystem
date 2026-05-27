@@ -5,6 +5,7 @@ using LibraryManagement.DataAccess.Repositories;
 using LibraryManagement.Domain.Interfaces.Repositories;
 using LibraryManagement.Domain.Interfaces.Services;
 using LibraryManagement.Domain.Services;
+using LibraryManagement.DataAccess.Seeders;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -44,6 +45,13 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
+
+using (var scope = app.Services.CreateScope())
+{
+    var context = scope.ServiceProvider.GetRequiredService<LibraryDbContext>();
+    await LibraryDataSeeder.SeedAsync(context);
+}
+
 
 // ── Middleware Pipeline ──
 if (app.Environment.IsDevelopment())
